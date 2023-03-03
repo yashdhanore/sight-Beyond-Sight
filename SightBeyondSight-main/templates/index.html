@@ -1,0 +1,149 @@
+{% extends 'bootstrap/base.html' %} {% import "bootstrap/wtf.html" as wtf %} {%
+block styles %} {{ super() }}
+<style>
+  body {
+    background: #e8f1f9;
+  }
+</style>
+<link rel="stylesheet" href="{{url_for('.static', filename='main.css')}}" />
+{% endblock %} {% block scripts %}
+<script src="{{url_for('.static', filename='main.js')}}"></script>
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=4eVY86Ho"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+<script
+  type="text/javascript"
+  src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"
+></script>
+<script type="text/javascript">
+  var recognition = new webkitSpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+  window.addEventListener("keydown", (event) => {
+      if (event.code === "Space") {
+        console.log("Space pressed");
+        recognition.start();
+      }
+    })
+
+  // window.addEventListener("keyup", (event) => {
+  //     if (event.code === "Space") {
+  //       console.log("Space released");
+  //       recognition.stop();
+  //     }
+  //   })
+
+    recognition.onresult = function (event) {
+        // Get recognized text
+        console.log("inside onresult")
+        var t = event.results[0][0].transcript;
+        var o1 = ""
+        var o2 = ""
+      // console.log("inside onresult text", text)
+        // Send text to server using AJAX
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/voice-input", true);
+        xhr.setRequestHeader("Content-Type", "audio/wav");
+        console.log("inside onresult blob", event.results[0][0].blob)
+        xhr.send(t);
+
+        xhr.onreadystatechange = (e) => {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+
+        if (xhr.status === 200) {
+          console.log('SUCCESS', xhr.responseText);
+          o1 = xhr.responseText
+          var ele = document.getElementById("display")
+          ele.innerHTML = o1
+
+          // callback(JSON.parse(xhr.responseText));
+        } else {
+          console.warn('request_error');
+        }
+      };
+
+        
+        // Display text on website
+      };
+
+</script>
+{{super()}} {% endblock %} {% block title %} Sight Beyond Sight {% endblock %}
+{% block content %} {% block metas %}
+<meta name="color-scheme" content="light blue dark" />
+{% endblock %}
+
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="#"
+        ><img
+          id="logo"
+          src="../static/web/png/logo.png"
+          alt="Sight Beyond Sight"
+          style="width: 150px"
+      /></a>
+    </div>
+    <div class="row">
+      <div class="heading">
+        <h2>Hello, welcome to Sight beyond Sight</h2>
+        <h3>An AI solution for the visually impaired</h3>
+      </div>
+    </div>
+    <div class="input-field" style="color: white">
+        {{ wtf.quick_form(form, button_map={'submit': 'primary'},
+        form_type='horizontal') }}
+      <p style="font-size: x-large">{{ message }}</p>
+    </div>
+  </div>
+
+  <div class="output" style="
+  display: flex; flex-direction: column; padding-top: 40px; padding-bottom: 40px; text-align: center;">
+    {% if text %}
+    <p id="loading"></p>
+    {% else %}
+    <p id="content" style="padding: 20px; font-size: x-large;">{{ sum }}</p>
+    {% endif %}
+
+    {% if audio %}
+    <div>
+          <audio
+            controls
+            autoplay
+          >
+            <source
+              src="{{ audio }}"
+              type="audio/mpeg"
+            />
+          </audio>
+    </div>
+    {% endif %}
+  </div>
+
+  <p id="display" style="display: flex; flex-direction: column; font-size: x-large; text-align: center;"></p>
+</body>
+
+<footer class="footer">
+  <div class="row-footer">
+    <div class="col-md-4" style="color: white">
+      <h4>About Us</h4>
+      <p>
+        We are a team of developers dedicated to creating innovative solutions
+        for the visually impaired.
+      </p>
+    </div>
+    <div class="col-md-4" style="color: white">
+      <h4>Contact Us</h4>
+      <p>Email: info@sightbeyondsight.com</p>
+      <p>Phone: 555-555-5555</p>
+    </div>
+    <div class="col-md-4">
+      <h4>Follow Us</h4>
+      <a href="#"><i class="fab fa-facebook fa-lg"></i></a>
+      <a href="#"><i class="fab fa-twitter fa-lg"></i></a>
+      <a href="#"><i class="fab fa-instagram fa-lg"></i></a>
+    </div>
+  </div>
+</footer>
+
+{% endblock %}
